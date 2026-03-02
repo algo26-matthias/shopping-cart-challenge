@@ -105,6 +105,14 @@ final class PatchCartItemControllerTest extends ApiWebTestCase
         $cartId = Uuid::v4()->toRfc4122();
         $itemId = Uuid::v4()->toRfc4122();
 
+        $cart = new \App\Entity\Cart($cartId, new \DateTimeImmutable());
+
+        $em = $this->em($client);
+        $em->persist($cart);
+        $em->persist(new CartItem($itemId, $cart, 'sku-1', 2));
+        $em->flush();
+        $em->clear();
+
         $client->request(
             'PATCH',
             sprintf('/api/carts/%s/items/%s', $cartId, $itemId),

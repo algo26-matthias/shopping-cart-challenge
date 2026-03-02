@@ -52,4 +52,9 @@ final class CartItem
     {
         $this->quantity += $by;
     }
+
+    public function setQuantity(int $quantity): void
+    {
+        $this->quantity = $quantity;
+    }
 }
