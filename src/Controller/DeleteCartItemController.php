@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\CartItem;
+use App\Application\CartService;
+use App\Application\Exception\CartItemNotFound;
+use App\Application\Exception\CartNotFound;
 use App\Http\ApiRequestGuard;
-use App\Repository\CartRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,8 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DeleteCartItemController
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
-        private readonly CartRepository $carts,
+        private readonly CartService $cartService,
         private readonly ApiRequestGuard $guard,
     ) {
     }
@@ -33,22 +32,11 @@ final class DeleteCartItemController
             return $response;
         }
 
-        $cart = $this->carts->find($cartId);
-        if ($cart === null) {
+        try {
+            $this->cartService->deleteItem($cartId, $itemId);
+        } catch (CartNotFound | CartItemNotFound $e) {
             return new JsonResponse(null, Response::HTTP_NOT_FOUND);
         }
-
-        $item = $this->em->getRepository(CartItem::class)->findOneBy([
-            'id' => $itemId,
-            'cart' => $cart,
-        ]);
-
-        if (!$item instanceof CartItem) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-        }
-
-        $this->em->remove($item);
-        $this->em->flush();
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }

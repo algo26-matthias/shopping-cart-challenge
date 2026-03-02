@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Cart;
+use App\Application\CartService;
 use App\Http\ApiRequestGuard;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Uid\Uuid;
 
 final class CreateCartController
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
-        private readonly UrlGeneratorInterface $urlGenerator,
         private readonly ApiRequestGuard $guard,
+        private readonly CartService $cartService,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
@@ -30,11 +28,8 @@ final class CreateCartController
             return $response;
         }
 
-        $id = Uuid::v4()->toRfc4122();
-
-        $cart = new Cart($id, new \DateTimeImmutable('now'));
-        $this->em->persist($cart);
-        $this->em->flush();
+        $cart = $this->cartService->createCart();
+        $id = $cart->getId();
 
         $location = $this->urlGenerator->generate('api_carts_get', ['cartId' => $id]);
 
