@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Entity\Cart;
+use Symfony\Component\HttpFoundation\Response;
 
-final class CreateCartControllerTest extends WebTestCase
+final class CreateCartControllerTest extends ApiWebTestCase
 {
-    public function testCreatesCartAndReturns201WithLocationHeader(): void
+    public function testPostCreatesCartAndPersistsIt(): void
     {
-        $client = static::createClient();
+        $client = $this->jsonClient();
+        $this->ensureSchema($client);
 
-        $client->request('POST', '/api/carts', server: [
-            'HTTP_ACCEPT' => 'application/json',
-        ]);
+        $client->request('POST', '/api/carts');
 
-        self::assertResponseStatusCodeSame(201);
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
         self::assertResponseHeaderSame('content-type', 'application/json');
 
         $location = $client->getResponse()->headers->get('Location');
@@ -24,19 +24,25 @@ final class CreateCartControllerTest extends WebTestCase
         self::assertMatchesRegularExpression('#^/api/carts/[0-9a-fA-F-]{36}$#', $location);
 
         $data = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-
         self::assertArrayHasKey('id', $data);
         self::assertMatchesRegularExpression('#^[0-9a-fA-F-]{36}$#', (string) $data['id']);
+
+        $em = $this->em($client);
+        $cart = $em->getRepository(Cart::class)->find((string) $data['id']);
+
+        self::assertNotNull($cart);
+        self::assertSame((string) $data['id'], $cart->getId());
     }
 
-    public function testRejectsNonJsonAcceptHeader(): void
+    public function testPostRejectsNonJsonAcceptHeader(): void
     {
-        $client = static::createClient();
-
-        $client->request('POST', '/api/carts', server: [
+        $client = static::createClient([], [
             'HTTP_ACCEPT' => 'text/html',
         ]);
+        $this->ensureSchema($client);
 
-        self::assertResponseStatusCodeSame(406);
+        $client->request('POST', '/api/carts');
+
+        self::assertResponseStatusCodeSame(Response::HTTP_NOT_ACCEPTABLE);
     }
 }
