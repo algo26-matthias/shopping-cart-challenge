@@ -41,9 +41,19 @@ final class GetCartController
             return new JsonResponse(null, Response::HTTP_NOT_FOUND);
         }
 
+        $items = [];
+        foreach ($cart->getItems() as $item) {
+            $items[] = [
+                'id' => $item->getId(),
+                'productId' => $item->getProductId(),
+                'quantity' => $item->getQuantity(),
+            ];
+        }
+
         return new JsonResponse([
             'id' => $cart->getId(),
             'createdAt' => $cart->getCreatedAt()->format(\DateTimeInterface::ATOM),
+            'items' => $items,
         ], Response::HTTP_OK);
     }
 }

@@ -16,17 +16,17 @@ final class GetCartControllerTest extends ApiWebTestCase
 
         $em = $this->em($client);
 
-        $id = '11111111-1111-4111-8111-111111111111';
-        $em->persist(new Cart($id, new \DateTimeImmutable('2026-01-01T00:00:00+00:00')));
+        $cartId = $this->newUuid();
+        $em->persist(new Cart($cartId, new \DateTimeImmutable('2026-01-01T00:00:00+00:00')));
         $em->flush();
         $em->clear();
 
-        $client->request('GET', '/api/carts/' . $id);
+        $client->request('GET', '/api/carts/' . $cartId);
 
         self::assertResponseStatusCodeSame(Response::HTTP_OK);
 
         $data = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        self::assertSame($id, $data['id']);
+        self::assertSame($cartId, $data['id']);
         self::assertArrayHasKey('createdAt', $data);
     }
 

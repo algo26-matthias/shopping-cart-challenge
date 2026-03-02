@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Uid\Uuid;
 
 abstract class ApiWebTestCase extends WebTestCase
 {
@@ -42,5 +43,10 @@ abstract class ApiWebTestCase extends WebTestCase
         $tool->createSchema($metadata);
 
         self::$schemaInitialized = true;
+    }
+
+    protected function newUuid(): string
+    {
+        return Uuid::v4()->toRfc4122();
     }
 }
