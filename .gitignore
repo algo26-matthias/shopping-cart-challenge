@@ -1,5 +1,4 @@
-# User-specific stuff
-.idea/
+.env
 
 ### Symfony template
 # Cache and logs
@@ -57,3 +56,6 @@
 
 ### MacOS
 .DS_Store
+
+### User-specific stuff
+.idea/

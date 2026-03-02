@@ -20,3 +20,6 @@ test:
 
 lint:
 	echo "not yet implemented"
+
+composer:
+	docker compose run --rm php composer $(ARGS)
