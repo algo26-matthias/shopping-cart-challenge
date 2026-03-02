@@ -1,4 +1,4 @@
-.PHONY: up down ps logs sh test lint
+.PHONY: up down ps logs sh test lint composer
 
 up:
 	docker compose up -d
