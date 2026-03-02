@@ -16,7 +16,7 @@ sh:
 	docker compose exec php sh
 
 test:
-	echo "not yet implemented"
+	docker compose exec php php bin/phpunit
 
 lint:
 	echo "not yet implemented"
