@@ -7,6 +7,9 @@
         "php": ">=8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "doctrine/doctrine-bundle": "^3.2",
+        "doctrine/doctrine-migrations-bundle": "^4.0",
+        "doctrine/orm": "^3.6",
         "nelmio/api-doc-bundle": "^5.9",
         "symfony/asset": "8.0.*",
         "symfony/console": "8.0.*",
@@ -73,6 +76,7 @@
         "phpunit/phpunit": "^13.0",
         "symfony/browser-kit": "8.0.*",
         "symfony/css-selector": "8.0.*",
+        "symfony/maker-bundle": "^1.66",
         "symfony/uid": "8.0.*"
     }
 }

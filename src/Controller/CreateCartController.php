@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Cart;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,6 +16,7 @@ use Symfony\Component\Uid\Uuid;
 final class CreateCartController
 {
     public function __construct(
+        private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
@@ -21,7 +24,6 @@ final class CreateCartController
     #[Route('/api/carts', name: 'api_carts_create', methods: ['POST'])]
     public function __invoke(Request $request): JsonResponse
     {
-        // Content negotiation (minimal, but parsed properly)
         $acceptable = $request->getAcceptableContentTypes();
         if (
             $acceptable !== []
@@ -33,7 +35,12 @@ final class CreateCartController
 
         $id = Uuid::v4()->toRfc4122();
 
-        $location = sprintf('/api/carts/%s', $id); # FIXME use $this->urlGenerator
+        $cart = new Cart($id, new \DateTimeImmutable('now'));
+        $this->em->persist($cart);
+        $this->em->flush();
+
+        $location = $this->urlGenerator->generate('api_carts_get', ['cartId' => $id]);
+
         $response = new JsonResponse(['id' => $id], Response::HTTP_CREATED);
         $response->headers->set('Location', $location);
 
