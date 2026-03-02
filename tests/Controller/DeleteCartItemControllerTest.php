@@ -69,7 +69,7 @@ final class DeleteCartItemControllerTest extends ApiWebTestCase
             ],
         );
 
-        self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        self::assertProblemJson(Response::HTTP_NOT_FOUND);
     }
 
     public function testDeleteReturns404IfItemNotFound(): void
@@ -95,7 +95,7 @@ final class DeleteCartItemControllerTest extends ApiWebTestCase
             ],
         );
 
-        self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        self::assertProblemJson(Response::HTTP_NOT_FOUND);
     }
 
     public function testDeleteReturns400ForInvalidUuid(): void
@@ -111,7 +111,7 @@ final class DeleteCartItemControllerTest extends ApiWebTestCase
             ],
         );
 
-        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        self::assertProblemJson(Response::HTTP_BAD_REQUEST);
     }
 
     public function testDeleteRejectsNonJsonAccept(): void
@@ -129,6 +129,6 @@ final class DeleteCartItemControllerTest extends ApiWebTestCase
             sprintf('/api/carts/%s/items/%s', $cartId, $itemId),
         );
 
-        self::assertResponseStatusCodeSame(Response::HTTP_NOT_ACCEPTABLE);
+        self::assertProblemJson(Response::HTTP_NOT_ACCEPTABLE);
     }
 }

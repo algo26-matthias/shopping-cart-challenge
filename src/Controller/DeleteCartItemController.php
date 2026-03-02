@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Application\CartService;
-use App\Application\Exception\CartItemNotFound;
-use App\Application\Exception\CartNotFound;
 use App\Http\ApiRequestGuard;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,19 +22,10 @@ final class DeleteCartItemController
     #[Route('/api/carts/{cartId}/items/{itemId}', name: 'api_cart_items_delete', methods: ['DELETE'])]
     public function __invoke(Request $request, string $cartId, string $itemId): JsonResponse
     {
-        if ($response = $this->guard->assertAcceptsJson($request)) {
-            return $response;
-        }
+        $this->guard->assertAcceptsJson($request);
+        $this->guard->assertUuid($cartId, $itemId);
 
-        if ($response = $this->guard->assertUuid($cartId, $itemId)) {
-            return $response;
-        }
-
-        try {
-            $this->cartService->deleteItem($cartId, $itemId);
-        } catch (CartNotFound | CartItemNotFound $e) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-        }
+        $this->cartService->deleteItem($cartId, $itemId);
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }

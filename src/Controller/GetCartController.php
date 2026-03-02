@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Application\CartService;
-use App\Application\Exception\CartNotFound;
 use App\Http\ApiRequestGuard;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,19 +24,10 @@ final readonly class GetCartController
         Request $request,
         string $cartId,
     ): JsonResponse {
-        if ($response = $this->guard->assertAcceptsJson($request)) {
-            return $response;
-        }
+        $this->guard->assertAcceptsJson($request);
+        $this->guard->assertUuid($cartId);
 
-        if ($response = $this->guard->assertUuid($cartId)) {
-            return $response;
-        }
-
-        try {
-            $cart = $this->cartService->getCart($cartId);
-        } catch (CartNotFound $e) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-        }
+        $cart = $this->cartService->getCart($cartId);
 
         $items = [];
         foreach ($cart->getItems() as $item) {

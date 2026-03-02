@@ -123,7 +123,7 @@ final class PatchCartItemControllerTest extends ApiWebTestCase
             content: json_encode(['quantity' => 0], JSON_THROW_ON_ERROR),
         );
 
-        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        self::assertProblemJson(Response::HTTP_BAD_REQUEST);
     }
 
     public function testPatchReturns404IfCartNotFound(): void
@@ -144,7 +144,7 @@ final class PatchCartItemControllerTest extends ApiWebTestCase
             content: json_encode(['quantity' => 5], JSON_THROW_ON_ERROR),
         );
 
-        self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        self::assertProblemJson(Response::HTTP_NOT_FOUND);
     }
 
     public function testPatchReturns404IfItemNotInCart(): void
@@ -172,6 +172,6 @@ final class PatchCartItemControllerTest extends ApiWebTestCase
             content: json_encode(['quantity' => 5], JSON_THROW_ON_ERROR),
         );
 
-        self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        self::assertProblemJson(Response::HTTP_NOT_FOUND);
     }
 }

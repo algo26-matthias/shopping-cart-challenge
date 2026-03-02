@@ -49,4 +49,17 @@ abstract class ApiWebTestCase extends WebTestCase
     {
         return Uuid::v4()->toRfc4122();
     }
+
+    protected function assertProblemJson(int $status): void
+    {
+        self::assertResponseStatusCodeSame($status);
+
+        $contentType = static::getClient()->getResponse()->headers->get('Content-Type');
+        self::assertIsString($contentType);
+        self::assertStringStartsWith('application/problem+json', $contentType);
+
+        $responseBody = json_decode((string) static::getClient()->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame($status, $responseBody['status'] ?? null);
+        self::assertIsString($responseBody['title'] ?? null);
+    }
 }

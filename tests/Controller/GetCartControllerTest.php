@@ -37,7 +37,7 @@ final class GetCartControllerTest extends ApiWebTestCase
 
         $client->request('GET', '/api/carts/not-a-uuid');
 
-        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        self::assertProblemJson(Response::HTTP_BAD_REQUEST);
     }
 
     public function testGetReturns404ForUnknownCart(): void
@@ -47,7 +47,7 @@ final class GetCartControllerTest extends ApiWebTestCase
 
         $client->request('GET', '/api/carts/00000000-0000-0000-0000-000000000000');
 
-        self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+        self::assertProblemJson(Response::HTTP_NOT_FOUND);
     }
 
     public function testGetRejectsNonJsonAcceptHeader(): void
@@ -59,6 +59,6 @@ final class GetCartControllerTest extends ApiWebTestCase
 
         $client->request('GET', '/api/carts/00000000-0000-0000-0000-000000000000');
 
-        self::assertResponseStatusCodeSame(Response::HTTP_NOT_ACCEPTABLE);
+        self::assertProblemJson(Response::HTTP_NOT_ACCEPTABLE);
     }
 }

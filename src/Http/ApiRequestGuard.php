@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
+use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
 use Symfony\Component\Uid\Uuid;
 
 final class ApiRequestGuard
 {
-    public function assertAcceptsJson(Request $request): ?JsonResponse
+    public function assertAcceptsJson(Request $request): void
     {
         $acceptable = $request->getAcceptableContentTypes();
         if (
@@ -19,33 +20,28 @@ final class ApiRequestGuard
             && !in_array('application/json', $acceptable, true)
             && !in_array('*/*', $acceptable, true)
         ) {
-            return new JsonResponse(null, Response::HTTP_NOT_ACCEPTABLE);
+            throw new NotAcceptableHttpException('Only application/json is supported.');
         }
-
-        return null;
     }
 
-    public function assertJsonContentTypeIfBody(Request $request): ?JsonResponse
+    public function assertJsonContentTypeIfBody(Request $request): void
     {
-        // Only enforce when there actually is a body
         if ($request->getContent() === '') {
-            return null;
+            return;
         }
 
         $contentType = (string) $request->headers->get('Content-Type', '');
         if (!str_starts_with($contentType, 'application/json')) {
-            return new JsonResponse(null, Response::HTTP_UNSUPPORTED_MEDIA_TYPE);
+            throw new UnsupportedMediaTypeHttpException('Only application/json request bodies are supported.');
         }
-
-        return null;
     }
 
-    public function assertUuid(string ...$ids): ?JsonResponse
+    public function assertUuid(string ...$ids): void
     {
-        if (array_any($ids, fn($id) => ! Uuid::isValid($id))) {
-            return new JsonResponse(null, Response::HTTP_BAD_REQUEST);
+        foreach ($ids as $id) {
+            if (!Uuid::isValid($id)) {
+                throw new BadRequestHttpException('Invalid UUID.');
+            }
         }
-
-        return null;
     }
 }

@@ -43,6 +43,6 @@ final class CreateCartControllerTest extends ApiWebTestCase
 
         $client->request('POST', '/api/carts');
 
-        self::assertResponseStatusCodeSame(Response::HTTP_NOT_ACCEPTABLE);
+        self::assertProblemJson(Response::HTTP_NOT_ACCEPTABLE);
     }
 }

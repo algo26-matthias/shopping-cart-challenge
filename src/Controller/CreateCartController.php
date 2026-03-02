@@ -24,9 +24,7 @@ final class CreateCartController
     #[Route('/api/carts', name: 'api_carts_create', methods: ['POST'])]
     public function __invoke(Request $request): JsonResponse
     {
-        if ($response = $this->guard->assertAcceptsJson($request)) {
-            return $response;
-        }
+        $this->guard->assertAcceptsJson($request);
 
         $cart = $this->cartService->createCart();
         $id = $cart->getId();
