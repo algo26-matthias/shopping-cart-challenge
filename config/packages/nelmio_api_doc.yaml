@@ -1,0 +1,10 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: Cart API
+            description: Simple REST API for carts and cart items (coding challenge).
+            version: 1.0.0
+    areas:
+        default:
+            path_patterns:
+            - ^/api(?!/doc$)
