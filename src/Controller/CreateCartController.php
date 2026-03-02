@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Cart;
+use App\Http\ApiRequestGuard;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,19 +19,15 @@ final class CreateCartController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly ApiRequestGuard $guard,
     ) {
     }
 
     #[Route('/api/carts', name: 'api_carts_create', methods: ['POST'])]
     public function __invoke(Request $request): JsonResponse
     {
-        $acceptable = $request->getAcceptableContentTypes();
-        if (
-            $acceptable !== []
-            && !in_array('application/json', $acceptable, true)
-            && !in_array('*/*', $acceptable, true)
-        ) {
-            return new JsonResponse(null, Response::HTTP_NOT_ACCEPTABLE);
+        if ($response = $this->guard->assertAcceptsJson($request)) {
+            return $response;
         }
 
         $id = Uuid::v4()->toRfc4122();

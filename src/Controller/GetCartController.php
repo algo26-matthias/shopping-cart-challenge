@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Http\ApiRequestGuard;
 use App\Repository\CartRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Uid\Uuid;
 
-final class GetCartController
+final readonly class GetCartController
 {
     public function __construct(
-        private readonly CartRepository $carts,
+        private CartRepository $carts,
+        private readonly ApiRequestGuard $guard,
     ) {
     }
 
@@ -23,17 +24,12 @@ final class GetCartController
         Request $request,
         string $cartId,
     ): JsonResponse {
-        $acceptable = $request->getAcceptableContentTypes();
-        if (
-            $acceptable !== []
-            && !in_array('application/json', $acceptable, true)
-            && !in_array('*/*', $acceptable, true)
-        ) {
-            return new JsonResponse(null, Response::HTTP_NOT_ACCEPTABLE);
+        if ($response = $this->guard->assertAcceptsJson($request)) {
+            return $response;
         }
 
-        if (!Uuid::isValid($cartId)) {
-            return new JsonResponse(null, Response::HTTP_BAD_REQUEST);
+        if ($response = $this->guard->assertUuid($cartId)) {
+            return $response;
         }
 
         $cart = $this->carts->find($cartId);

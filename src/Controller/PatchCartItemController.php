@@ -5,43 +5,36 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\CartItem;
+use App\Http\ApiRequestGuard;
 use App\Repository\CartRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Uid\Uuid;
 
 final class PatchCartItemController
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly CartRepository $carts,
+        private readonly ApiRequestGuard $guard,
     ) {
     }
 
     #[Route('/api/carts/{cartId}/items/{itemId}', name: 'api_cart_items_patch', methods: ['PATCH'])]
     public function __invoke(Request $request, string $cartId, string $itemId): JsonResponse
     {
-        // Accept (ADR)
-        $acceptable = $request->getAcceptableContentTypes();
-        if (
-            $acceptable !== []
-            && !in_array('application/json', $acceptable, true)
-            && !in_array('*/*', $acceptable, true)
-        ) {
-            return new JsonResponse(null, Response::HTTP_NOT_ACCEPTABLE);
+        if ($response = $this->guard->assertAcceptsJson($request)) {
+            return $response;
         }
 
-        // Content-Type (ADR)
-        $contentType = (string) $request->headers->get('Content-Type', '');
-        if ($request->getContent() !== '' && !str_starts_with($contentType, 'application/json')) {
-            return new JsonResponse(null, Response::HTTP_UNSUPPORTED_MEDIA_TYPE);
+        if ($response = $this->guard->assertJsonContentTypeIfBody($request)) {
+            return $response;
         }
 
-        if (!Uuid::isValid($cartId) || !Uuid::isValid($itemId)) {
-            return new JsonResponse(null, Response::HTTP_BAD_REQUEST);
+        if ($response = $this->guard->assertUuid($cartId, $itemId)) {
+            return $response;
         }
 
         $cart = $this->carts->find($cartId);
