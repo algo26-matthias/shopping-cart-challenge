@@ -38,6 +38,11 @@ final class CartItem
         return $this->id;
     }
 
+    public function getCart(): Cart
+    {
+        return $this->cart;
+    }
+
     public function getProductId(): string
     {
         return $this->productId;

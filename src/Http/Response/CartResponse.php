@@ -10,15 +10,22 @@ use DateTimeInterface;
 
 final class CartResponse
 {
+    /**
+     * @return array{
+     *   id: string,
+     *   createdAt: string,
+     *   items: list<array{id: string, productId: string, quantity: int}>
+     * }
+     */
     public static function from(Cart $cart): array
     {
         return [
             'id' => $cart->getId(),
             'createdAt' => $cart->getCreatedAt()->format(DateTimeInterface::ATOM),
-            'items' => array_map(
+            'items' => array_values(array_map(
                 static fn (CartItem $i) => CartItemResponse::from($i),
                 $cart->getItems()->toArray(),
-            ),
+            )),
         ];
     }
 }

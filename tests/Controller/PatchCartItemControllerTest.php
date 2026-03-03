@@ -27,6 +27,10 @@ final class PatchCartItemControllerTest extends ApiWebTestCase
         $em->flush();
         $em->clear();
 
+        $reloadedItem = $em->getRepository(CartItem::class)->find($itemId);
+        self::assertNotNull($reloadedItem);
+        self::assertSame($cartId, $reloadedItem->getCart()->getId());
+
         $client->request(
             'PATCH',
             sprintf('/api/carts/%s/items/%s', $cartId, $itemId),

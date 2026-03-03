@@ -50,7 +50,6 @@ final class ApiRequestGuard
         }
 
         try {
-            /** @var array<string, mixed> $payload */
             $payload = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
             throw new BadRequestHttpException('Invalid JSON.');

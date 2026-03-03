@@ -1,4 +1,4 @@
-.PHONY: up down logs sh test coverage coverage-html
+.PHONY: up down logs sh test coverage coverage-html stan
 
 up:
 	docker compose up -d
@@ -20,3 +20,6 @@ coverage:
 
 coverage-html:
 	docker compose exec -e APP_ENV=test php php -d pcov.enabled=1 bin/phpunit --coverage-html var/coverage
+
+stan:
+	docker compose exec php vendor/bin/phpstan analyse src
