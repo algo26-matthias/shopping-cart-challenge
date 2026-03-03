@@ -25,8 +25,8 @@ Out of scope of the coding challenge: Removing an entire cart. A real-life API w
 
 We are using these basic elements:
 - Docker
-- Symfony
-- MariaDB
+- PHP 8.5 and Symfony 8 
+- MariaDB 11.4
 
 ## Architecture
 
@@ -61,7 +61,7 @@ make up
 ```
 If `.env` is missing, `make up` will automatically create it from `.env.example`.
 
-Once the container have started, you can interact with the API via `http://localhost:8080/`
+Once the containers have started, you can interact with the API via `http://localhost:8080/`
 
 ### Tests and Code Coverage
 Run the test suite by executing
