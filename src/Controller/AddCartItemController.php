@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Application\CartService;
 use App\Http\ApiRequestGuard;
+use App\Http\Response\CartItemResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,10 +44,9 @@ final readonly class AddCartItemController
 
         $item = $this->cartService->addItem($cartId, $productId, $quantity);
 
-        return new JsonResponse([
-            'id' => $item->getId(),
-            'productId' => $item->getProductId(),
-            'quantity' => $item->getQuantity(),
-        ], Response::HTTP_CREATED);
+        return new JsonResponse(
+            CartItemResponse::from($item),
+            Response::HTTP_CREATED,
+        );
     }
 }

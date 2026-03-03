@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Application\CartService;
 use App\Http\ApiRequestGuard;
+use App\Http\Response\CartResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,19 +30,9 @@ final readonly class GetCartController
 
         $cart = $this->cartService->getCart($cartId);
 
-        $items = [];
-        foreach ($cart->getItems() as $item) {
-            $items[] = [
-                'id' => $item->getId(),
-                'productId' => $item->getProductId(),
-                'quantity' => $item->getQuantity(),
-            ];
-        }
-
-        return new JsonResponse([
-            'id' => $cart->getId(),
-            'createdAt' => $cart->getCreatedAt()->format(\DateTimeInterface::ATOM),
-            'items' => $items,
-        ], Response::HTTP_OK);
+        return new JsonResponse(
+            CartResponse::from($cart),
+            Response::HTTP_OK,
+        );
     }
 }
