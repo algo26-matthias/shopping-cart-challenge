@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Application\CartService;
 use App\Http\ApiRequestGuard;
 use App\Http\Response\CartItemResponse;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,21 +29,16 @@ final readonly class AddCartItemController
         $this->guard->assertJsonContentTypeIfBody($request);
         $this->guard->assertUuid($cartId);
 
-        try {
-            /** @var array<string, mixed> $payload */
-            $payload = json_decode((string) $request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
-            throw new BadRequestHttpException('Invalid JSON.');
-        }
+        $payload = $this->guard->jsonBody($request);
 
         $productId = isset($payload['productId']) ? trim((string) $payload['productId']) : '';
-        $quantity = isset($payload['quantity']) ? (int) $payload['quantity'] : 1;
+        $quantity = isset($payload['quantity']) ? (int) $payload['quantity'] : 0;
 
-        if ($productId === '' || $quantity < 1) {
-            throw new BadRequestHttpException('quantity must be >= 1');
+        try {
+            $item = $this->cartService->addItem($cartId, $productId, $quantity);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage());
         }
-
-        $item = $this->cartService->addItem($cartId, $productId, $quantity);
 
         return new JsonResponse(
             CartItemResponse::from($item),

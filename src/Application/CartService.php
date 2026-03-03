@@ -11,6 +11,7 @@ use App\Entity\CartItem;
 use App\Repository\CartItemRepository;
 use App\Repository\CartRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Symfony\Component\Uid\Uuid;
 
 final class CartService
@@ -45,6 +46,14 @@ final class CartService
 
     public function addItem(string $cartId, string $productId, int $quantity): CartItem
     {
+        if ($productId === '') {
+            throw new InvalidArgumentException('no product ID given.');
+        }
+
+        if ($quantity < 1) {
+            throw new InvalidArgumentException('quantity must be >= 1');
+        }
+
         $cart = $this->getCart($cartId);
 
         $existing = $this->items->findByCartAndProductId($cart, $productId);
@@ -64,6 +73,10 @@ final class CartService
 
     public function setItemQuantity(string $cartId, string $itemId, int $quantity): CartItem
     {
+        if ($quantity < 1) {
+            throw new InvalidArgumentException('quantity must be >= 1');
+        }
+
         $cart = $this->getCart($cartId);
 
         $item = $this->items->findByCartAndItemId($cart, $itemId);

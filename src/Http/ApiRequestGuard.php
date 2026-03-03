@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use JsonException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
@@ -43,5 +44,31 @@ final class ApiRequestGuard
                 throw new BadRequestHttpException('Invalid UUID.');
             }
         }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function jsonBody(Request $request): array
+    {
+        $raw = (string) $request->getContent();
+
+        if ($raw === '') {
+            throw new BadRequestHttpException('Missing JSON body.');
+        }
+
+        try {
+            /** @var array<string, mixed> $payload */
+            $payload = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            throw new BadRequestHttpException('Invalid JSON.');
+        }
+
+        if (!is_array($payload)) {
+            // defensive; json_decode(true) should yield array|null/scalar
+            throw new BadRequestHttpException('Invalid JSON.');
+        }
+
+        return $payload;
     }
 }

@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Application\CartService;
 use App\Http\ApiRequestGuard;
 use App\Http\Response\CartItemResponse;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,23 +29,17 @@ final class PatchCartItemController
         $this->guard->assertJsonContentTypeIfBody($request);
         $this->guard->assertUuid($cartId, $itemId);
 
-        try {
-            /** @var array<string, mixed> $payload */
-            $payload = json_decode((string) $request->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
-            throw new BadRequestHttpException('Invalid JSON.');
-        }
+        $payload = $this->guard->jsonBody($request);
 
         if (!array_key_exists('quantity', $payload)) {
-            throw new BadRequestHttpException('quantity must be >= 1');
+            throw new BadRequestHttpException('quantity argument missing.');
         }
 
-        $quantity = (int) $payload['quantity'];
-        if ($quantity < 1) {
-            throw new BadRequestHttpException('quantity must be >= 1');
+        try {
+            $item = $this->cartService->setItemQuantity($cartId, $itemId, (int) $payload['quantity']);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage());
         }
-
-        $item = $this->cartService->setItemQuantity($cartId, $itemId, $quantity);
 
         return new JsonResponse(
             CartItemResponse::from($item),
