@@ -23,4 +23,20 @@ final readonly class ProblemDetailsResponse
         public ?string $detail = null,
     ) {
     }
+
+    /** @return array<string, mixed> */
+    public function toArray(): array
+    {
+        $payload = [
+            'type' => $this->type,
+            'title' => $this->title,
+            'status' => $this->status,
+        ];
+
+        if ($this->detail !== null && $this->detail !== '') {
+            $payload['detail'] = $this->detail;
+        }
+
+        return $payload;
+    }
 }

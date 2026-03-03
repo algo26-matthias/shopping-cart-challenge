@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http;
 
+use App\Http\Response\ProblemDetailsResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -11,27 +12,21 @@ final class ProblemDetailsFactory
 {
     /**
      * RFC 7807: application/problem+json
-     *
-     * @param array<string,mixed> $extra
      */
     public function create(
         int $status,
         string $title,
         string $detail = '',
         string $type = 'about:blank',
-        array $extra = [],
     ): JsonResponse {
-        $payload = array_merge(
-            [
-                'type' => $type,
-                'title' => $title,
-                'status' => $status,
-            ],
-            $detail !== '' ? ['detail' => $detail] : [],
-            $extra,
+        $dto = new ProblemDetailsResponse(
+            type: $type,
+            title: $title,
+            status: $status,
+            detail: $detail,
         );
 
-        $response = new JsonResponse($payload, $status);
+        $response = new JsonResponse($dto->toArray(), $status);
         $response->headers->set('Content-Type', 'application/problem+json');
 
         return $response;
