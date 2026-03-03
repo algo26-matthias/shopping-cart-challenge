@@ -6,6 +6,9 @@ namespace App\Controller;
 
 use App\Application\CartService;
 use App\Http\ApiRequestGuard;
+use App\Http\Response\ProblemDetailsResponse;
+use Nelmio\ApiDocBundle\Attribute\Model;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,6 +22,43 @@ final class DeleteCartItemController
     ) {
     }
 
+    #[OA\Tag(name: 'Cart Items')]
+    #[OA\Delete(
+        path: '/api/carts/{cartId}/items/{itemId}',
+        summary: 'Deletes an item from a cart',
+        parameters: [
+            new OA\Parameter(
+                name: 'cartId',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            ),
+            new OA\Parameter(
+                name: 'itemId',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid')
+            ),
+        ],
+        responses: [
+            new OA\Response(response: 204, description: 'Deleted'),
+            new OA\Response(
+                response: 400,
+                description: 'Bad Request',
+                content: new OA\JsonContent(ref: new Model(type: ProblemDetailsResponse::class))
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Not Found',
+                content: new OA\JsonContent(ref: new Model(type: ProblemDetailsResponse::class))
+            ),
+            new OA\Response(
+                response: 406,
+                description: 'Not Acceptable',
+                content: new OA\JsonContent(ref: new Model(type: ProblemDetailsResponse::class))
+            ),
+        ]
+    )]
     #[Route('/api/carts/{cartId}/items/{itemId}', name: 'api_cart_items_delete', methods: ['DELETE'])]
     public function __invoke(Request $request, string $cartId, string $itemId): JsonResponse
     {

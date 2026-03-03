@@ -29,6 +29,14 @@ final readonly class ProblemDetailsExceptionSubscriber implements EventSubscribe
 
     public function onKernelException(ExceptionEvent $event): void
     {
+        $request = $event->getRequest();
+        $path = $request->getPathInfo();
+
+        // Only handle API routes; let Symfony handle everything else (incl. Swagger UI)
+        if (!str_starts_with($path, '/api') || str_starts_with($path, '/api/doc')) {
+            return;
+        }
+
         $e = $event->getThrowable();
 
         if ($e instanceof CartNotFound) {
