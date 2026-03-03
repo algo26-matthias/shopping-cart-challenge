@@ -59,7 +59,9 @@ You'll need Docker and Docker Compose to run the project locally. For easier int
 ```shell
 make up
 ```
-After the dust has settled you can interact with the API via `http://localhost:8080/`
+If `.env` is missing, `make up` will automatically create it from `.env.example`.
+
+Once the container have started, you can interact with the API via `http://localhost:8080/`
 
 ### Tests and Code Coverage
 Run the test suite by executing

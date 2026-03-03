@@ -1,6 +1,9 @@
 .PHONY: up down logs sh test coverage coverage-html stan
 
-up:
+ENV_FILE=.env
+ENV_EXAMPLE=.env.example
+
+up: ensure-env
 	docker compose up -d
 
 down:
@@ -23,3 +26,9 @@ coverage-html:
 
 stan:
 	docker compose exec php vendor/bin/phpstan analyse src
+
+ensure-env:
+	@if [ ! -f $(ENV_FILE) ]; then \
+		echo "No .env found. Creating from .env.example"; \
+		cp $(ENV_EXAMPLE) $(ENV_FILE); \
+	fi
