@@ -25,18 +25,6 @@ final class ApiRequestGuard
         }
     }
 
-    public function assertJsonContentTypeIfBody(Request $request): void
-    {
-        if ($request->getContent() === '') {
-            return;
-        }
-
-        $contentType = (string) $request->headers->get('Content-Type', '');
-        if (!str_starts_with($contentType, 'application/json')) {
-            throw new UnsupportedMediaTypeHttpException('Only application/json request bodies are supported.');
-        }
-    }
-
     public function assertUuid(string ...$ids): void
     {
         foreach ($ids as $id) {
@@ -52,20 +40,23 @@ final class ApiRequestGuard
     public function jsonBody(Request $request): array
     {
         $raw = (string) $request->getContent();
-
         if ($raw === '') {
             throw new BadRequestHttpException('Missing JSON body.');
+        }
+
+        $contentType = (string) $request->headers->get('Content-Type', '');
+        if (!str_starts_with($contentType, 'application/json')) {
+            throw new UnsupportedMediaTypeHttpException('Only application/json request bodies are supported.');
         }
 
         try {
             /** @var array<string, mixed> $payload */
             $payload = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
+        } catch (\JsonException) {
             throw new BadRequestHttpException('Invalid JSON.');
         }
 
         if (!is_array($payload)) {
-            // defensive; json_decode(true) should yield array|null/scalar
             throw new BadRequestHttpException('Invalid JSON.');
         }
 

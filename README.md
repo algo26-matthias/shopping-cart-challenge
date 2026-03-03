@@ -22,3 +22,7 @@ make up
 ```
 After the dust has settled you can interact with the API via `http://localhost:8080/
 
+### API Contract
+
+After starting the container, the OpenAPI documentation is available here:
+http://localhost:8080/api/doc

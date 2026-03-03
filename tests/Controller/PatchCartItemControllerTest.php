@@ -105,7 +105,7 @@ final class PatchCartItemControllerTest extends ApiWebTestCase
         $cartId = Uuid::v4()->toRfc4122();
         $itemId = Uuid::v4()->toRfc4122();
 
-        $cart = new \App\Entity\Cart($cartId, new \DateTimeImmutable());
+        $cart = new Cart($cartId, new \DateTimeImmutable());
 
         $em = $this->em($client);
         $em->persist($cart);
@@ -124,6 +124,81 @@ final class PatchCartItemControllerTest extends ApiWebTestCase
         );
 
         self::assertProblemJson(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testPatchReturns400ForMissingQuantity(): void
+    {
+        $client = $this->jsonClient();
+        $this->ensureSchema($client);
+
+        $cartId = Uuid::v4()->toRfc4122();
+        $itemId = Uuid::v4()->toRfc4122();
+
+        $cart = new Cart($cartId, new \DateTimeImmutable());
+
+        $em = $this->em($client);
+        $em->persist($cart);
+        $em->persist(new CartItem($itemId, $cart, 'sku-1', 2));
+        $em->flush();
+        $em->clear();
+
+        $client->request(
+            'PATCH',
+            sprintf('/api/carts/%s/items/%s', $cartId, $itemId),
+            server: [
+                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            content: json_encode(['no_quantity' => ''], JSON_THROW_ON_ERROR),
+        );
+
+        self::assertProblemJson(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testPatchWithEmptyBodyDoesNotTriggerUnsupportedMediaType(): void
+    {
+        $client = $this->jsonClient();
+        $this->ensureSchema($client);
+
+        $cartId = Uuid::v4()->toRfc4122();
+        $itemId = Uuid::v4()->toRfc4122();
+
+        $client->request(
+            'PATCH',
+            sprintf('/api/carts/%s/items/%s', $cartId, $itemId),
+            server: [
+                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'text/plain', // absichtlich "falsch"
+            ],
+            content: '',
+        );
+
+        self::assertProblemJson(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testPatchWithNonJsonContentTypeReturns415(): void
+    {
+        $client = $this->jsonClient();
+        $this->ensureSchema($client);
+
+        $cartId = Uuid::v4()->toRfc4122();
+        $itemId = Uuid::v4()->toRfc4122();
+
+        $client->request(
+            'PATCH',
+            sprintf('/api/carts/%s/items/%s', $cartId, $itemId),
+            server: [
+                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'text/plain',
+            ],
+            content: 'not-json',
+        );
+
+        self::assertResponseStatusCodeSame(415);
+        self::assertStringStartsWith(
+            'application/problem+json',
+            (string) $client->getResponse()->headers->get('Content-Type')
+        );
     }
 
     public function testPatchReturns404IfCartNotFound(): void
@@ -145,6 +220,64 @@ final class PatchCartItemControllerTest extends ApiWebTestCase
         );
 
         self::assertProblemJson(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testPatchReturns400ForInvalidJson(): void
+    {
+        $client = $this->jsonClient();
+        $this->ensureSchema($client);
+
+        $cartId = Uuid::v4()->toRfc4122();
+        $itemId = Uuid::v4()->toRfc4122();
+
+        $em = $this->em($client);
+        $cart = new Cart($cartId, new \DateTimeImmutable());
+        $em->persist($cart);
+        $em->persist(new CartItem($itemId, $cart, 'sku-1', 2));
+        $em->flush();
+        $em->clear();
+
+        $client->request(
+            'PATCH',
+            sprintf('/api/carts/%s/items/%s', $cartId, $itemId),
+            server: [
+                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            content: '{invalid-json',
+        );
+
+        self::assertProblemJson(Response::HTTP_BAD_REQUEST);
+        $data = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('Invalid JSON.', $data['detail'] ?? null);
+    }
+
+    public function testPatchReturns400WhenJsonIsNotAnObject(): void
+    {
+        $client = $this->jsonClient();
+        $this->ensureSchema($client);
+
+        $cartId = Uuid::v4()->toRfc4122();
+        $itemId = Uuid::v4()->toRfc4122();
+
+        $em = $this->em($client);
+        $cart = new Cart($cartId, new \DateTimeImmutable());
+        $em->persist($cart);
+        $em->persist(new CartItem($itemId, $cart, 'sku-1', 2));
+        $em->flush();
+        $em->clear();
+
+        $client->request(
+            'PATCH',
+            sprintf('/api/carts/%s/items/%s', $cartId, $itemId),
+            server: [
+                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            content: 'true',
+        );
+
+        self::assertProblemJson(Response::HTTP_BAD_REQUEST);
     }
 
     public function testPatchReturns404IfItemNotInCart(): void

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Controller;
 
 use App\Entity\Cart;
+use App\Entity\CartItem;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Uid\Uuid;
 
 final class AddCartItemControllerTest extends ApiWebTestCase
 {
@@ -96,5 +98,65 @@ final class AddCartItemControllerTest extends ApiWebTestCase
         self::assertCount(1, $cart['items']);
         self::assertSame('sku-1', $cart['items'][0]['productId']);
         self::assertSame(5, $cart['items'][0]['quantity']);
+    }
+
+    public function testAddReturns400ForMissingProductId(): void
+    {
+        $client = $this->jsonClient();
+        $this->ensureSchema($client);
+
+        $em = $this->em($client);
+
+        $cartId = $this->newUuid();
+        $em->persist(new Cart($cartId, new \DateTimeImmutable()));
+        $em->flush();
+        $em->clear();
+
+        $client->request(
+            'POST',
+            '/api/carts/' . $cartId . '/items',
+            server: [
+                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            content: json_encode(
+                [
+                    'quantity' => 5,
+                ],
+                JSON_THROW_ON_ERROR,
+            ),
+        );
+
+        self::assertProblemJson(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testAddReturns400ForMissingQuantity(): void
+    {
+        $client = $this->jsonClient();
+        $this->ensureSchema($client);
+
+        $em = $this->em($client);
+
+        $cartId = $this->newUuid();
+        $em->persist(new Cart($cartId, new \DateTimeImmutable()));
+        $em->flush();
+        $em->clear();
+
+        $client->request(
+            'POST',
+            '/api/carts/' . $cartId . '/items',
+            server: [
+                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
+            ],
+            content: json_encode(
+                [
+                    'productId' => 'sku-1',
+                ],
+                JSON_THROW_ON_ERROR,
+            ),
+        );
+
+        self::assertProblemJson(Response::HTTP_BAD_REQUEST);
     }
 }

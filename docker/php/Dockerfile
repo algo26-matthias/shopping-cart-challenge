@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # APCu for caching in dev (not mandatory)
-RUN pecl install apcu \
-  && docker-php-ext-enable apcu
+RUN pecl install apcu pcov \
+  && docker-php-ext-enable apcu pcov
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

@@ -80,7 +80,6 @@ final class PatchCartItemController
     public function __invoke(Request $request, string $cartId, string $itemId): JsonResponse
     {
         $this->guard->assertAcceptsJson($request);
-        $this->guard->assertJsonContentTypeIfBody($request);
         $this->guard->assertUuid($cartId, $itemId);
 
         $payload = $this->guard->jsonBody($request);

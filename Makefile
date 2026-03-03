@@ -1,13 +1,10 @@
-.PHONY: up down ps logs sh test lint composer
+.PHONY: up down logs sh test coverage coverage-html
 
 up:
 	docker compose up -d
 
 down:
 	docker compose down
-
-ps:
-	docker compose ps
 
 logs:
 	docker compose logs -f
@@ -18,8 +15,8 @@ sh:
 test:
 	docker compose exec -e APP_ENV=test -e APP_DEBUG=1 php php bin/phpunit
 
-lint:
-	echo "not yet implemented"
+coverage:
+	docker compose exec -e APP_ENV=test php php -d pcov.enabled=1 bin/phpunit --coverage-text
 
-composer:
-	docker compose run --rm php composer $(ARGS)
+coverage-html:
+	docker compose exec -e APP_ENV=test php php -d pcov.enabled=1 bin/phpunit --coverage-html var/coverage

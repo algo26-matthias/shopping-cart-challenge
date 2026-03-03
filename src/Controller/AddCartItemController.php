@@ -74,7 +74,6 @@ final readonly class AddCartItemController
     public function __invoke(Request $request, string $cartId): JsonResponse
     {
         $this->guard->assertAcceptsJson($request);
-        $this->guard->assertJsonContentTypeIfBody($request);
         $this->guard->assertUuid($cartId);
 
         $payload = $this->guard->jsonBody($request);
