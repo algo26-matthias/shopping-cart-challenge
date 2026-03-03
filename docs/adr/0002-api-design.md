@@ -1,7 +1,8 @@
 # ADR-0002 – API Design
 
 ## RESTful
-This API follows REST principles and models domain concepts as resources.
+This API follows REST principles and models domain concepts as resources.  
+The API deliberately separates HTTP concerns (guards, content negotiation) from business logic (application services).  
 See the sections below for the concrete design decisions.
 
 ## JSON only
