@@ -5,6 +5,7 @@ ENV_EXAMPLE=.env.example
 
 up: ensure-env
 	docker compose up -d
+	docker compose exec php composer install --no-interaction --prefer-dist
 
 down:
 	docker compose down
