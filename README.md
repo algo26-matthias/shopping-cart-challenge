@@ -18,6 +18,7 @@ Not included:
 - Inventory validation
 - Expiration handling
 - HATEOAS
+- Logging / Monitoring
 
 Out of scope of the coding challenge: Removing an entire cart. A real-life API would of course include this operation!
 
